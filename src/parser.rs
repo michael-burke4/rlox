@@ -1,4 +1,4 @@
-use crate::{Expr, Scanner, Token};
+use crate::{Expr, Scanner, Token, TokenType};
 pub struct Parser {
     scanner: Scanner,
     current: usize,
@@ -11,7 +11,7 @@ impl Parser {
             current: 0,
         }
     }
-    
+
     pub fn parse(&mut self) -> Expr {
         self.expression()
     }
@@ -30,9 +30,9 @@ impl Parser {
     fn peek(&self) -> &Token {
         self.scanner.token_at(self.current)
     }
-    
+
     fn at_end(&self) -> bool {
-        return self.current == self.scanner.len()
+        return self.current == self.scanner.len();
     }
 
     fn expression(&mut self) -> Expr {
@@ -45,8 +45,8 @@ impl Parser {
             if self.at_end() {
                 break;
             }
-            match self.peek() {
-                Token::BangEqual(_) | Token::EqualEqual(_) => {
+            match self.peek().typ {
+                TokenType::BangEqual | TokenType::EqualEqual => {
                     self.advance();
                     let operator = self.previous().unwrap();
                     let right = self.comparison();
@@ -66,11 +66,11 @@ impl Parser {
             if self.at_end() {
                 break;
             }
-            match self.peek() {
-                Token::Greater(_)
-                | Token::GreaterEqual(_)
-                | Token::Less(_)
-                | Token::LessEqual(_) => {
+            match self.peek().typ {
+                TokenType::Greater
+                | TokenType::GreaterEqual
+                | TokenType::Less
+                | TokenType::LessEqual => {
                     self.advance();
                     let operator = self.previous().unwrap();
                     let right = self.term();
@@ -90,8 +90,8 @@ impl Parser {
             if self.at_end() {
                 break;
             }
-            match self.peek() {
-                Token::Minus(_) | Token::Plus(_) => {
+            match self.peek().typ {
+                TokenType::Minus | TokenType::Plus => {
                     self.advance();
                     let operator = self.previous().unwrap();
                     let right = self.factor();
@@ -111,8 +111,8 @@ impl Parser {
             if self.at_end() {
                 break;
             }
-            match self.peek() {
-                Token::Slash(_) | Token::Star(_) => {
+            match self.peek().typ {
+                TokenType::Slash | TokenType::Star => {
                     self.advance();
                     let operator = self.previous().unwrap();
                     let right = self.unary();
@@ -125,26 +125,30 @@ impl Parser {
         }
         ret
     }
-    
+
     fn unary(&mut self) -> Expr {
-        match self.peek() {
-            Token::Bang(_) | Token::Minus(_) => {
+        match self.peek().typ {
+            TokenType::Bang | TokenType::Minus => {
                 self.advance();
                 let operator = self.previous().unwrap();
                 let right = self.unary();
                 return Expr::Unary(operator, Box::new(right));
             }
-            _ => self.primary()
+            _ => self.primary(),
         }
     }
-    
+
     fn primary(&mut self) -> Expr {
         let ret: Expr;
-        match self.peek() {
-            Token::False(_) | Token::True(_) | Token::Nil(_) | Token::String(_, _) | Token::Number(_, _) => {
+        match self.peek().typ {
+              TokenType::False
+            | TokenType::True
+            | TokenType::Nil
+            | TokenType::String(_)
+            | TokenType::Number(_) => {
                 ret = Expr::Literal(self.peek().clone());
             }
-            Token::LParen(_) => {
+            TokenType::LParen => {
                 self.advance();
                 let e = self.expression();
                 ret = Expr::Grouping(Box::new(e));

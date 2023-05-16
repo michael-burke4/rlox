@@ -1,5 +1,4 @@
-use crate::LoxError;
-use crate::Token;
+use crate::{LoxError, Token, TokenType};
 use std::collections::HashMap;
 
 #[derive(Debug)]
@@ -8,7 +7,7 @@ pub struct Scanner {
     tokens: Vec<Token>,
     current: usize,
     line: usize,
-    keyword_map: HashMap<String, Token>,
+    keyword_map: HashMap<String, TokenType>,
 }
 
 // this wonderful macro has been provided by
@@ -27,23 +26,23 @@ impl Scanner {
     pub fn new(src: String) -> Scanner {
         // when adding new keywords, don't forget to change the keyword scanning in
         // scan_token() !!!
-        let km: HashMap<String, Token> = hashmap![
-            "and".to_string() => Token::And(0),
-            "class".to_string() => Token::Class(0),
-            "else".to_string() => Token::Else(0),
-            "false".to_string() => Token::False(0),
-            "fun".to_string() => Token::Fun(0),
-            "for".to_string() => Token::For(0),
-            "if".to_string() => Token::If(0),
-            "nil".to_string() => Token::Nil(0),
-            "or".to_string() => Token::Or(0),
-            "print".to_string() => Token::Print(0),
-            "return".to_string() => Token::Return(0),
-            "super".to_string() => Token::Super(0),
-            "this".to_string() => Token::This(0),
-            "true".to_string() => Token::True(0),
-            "var".to_string() => Token::Var(0),
-            "while".to_string() => Token::While(0)
+        let km: HashMap<String, TokenType> = hashmap![
+            "and".to_string()    => TokenType::And,
+            "class".to_string()  => TokenType::Class,
+            "else".to_string()   => TokenType::Else,
+            "false".to_string()  => TokenType::False,
+            "fun".to_string()    => TokenType::Fun,
+            "for".to_string()    => TokenType::For,
+            "if".to_string()     => TokenType::If,
+            "nil".to_string()    => TokenType::Nil,
+            "or".to_string()     => TokenType::Or,
+            "print".to_string()  => TokenType::Print,
+            "return".to_string() => TokenType::Return,
+            "super".to_string()  => TokenType::Super,
+            "this".to_string()   => TokenType::This,
+            "true".to_string()   => TokenType::True,
+            "var".to_string()    => TokenType::Var,
+            "while".to_string()  => TokenType::While
         ];
         Scanner {
             source: src,
@@ -88,65 +87,65 @@ impl Scanner {
                 self.line += 1;
             }
             '(' => {
-                self.add_token(Token::LParen(self.line));
+                self.add_token(Token::new(self.line, TokenType::LParen));
             }
             ')' => {
-                self.add_token(Token::RParen(self.line));
+                self.add_token(Token::new(self.line, TokenType::RParen));
             }
             '{' => {
-                self.add_token(Token::LBrace(self.line));
+                self.add_token(Token::new(self.line, TokenType::LBrace));
             }
             '}' => {
-                self.add_token(Token::RBrace(self.line));
+                self.add_token(Token::new(self.line, TokenType::RBrace));
             }
             ',' => {
-                self.add_token(Token::Comma(self.line));
+                self.add_token(Token::new(self.line, TokenType::Comma));
             }
             '.' => {
-                self.add_token(Token::Dot(self.line));
+                self.add_token(Token::new(self.line, TokenType::Dot));
             }
             ';' => {
-                self.add_token(Token::Semicolon(self.line));
+                self.add_token(Token::new(self.line, TokenType::Semicolon));
             }
             '-' => {
-                self.add_token(Token::Minus(self.line));
+                self.add_token(Token::new(self.line, TokenType::Minus));
             }
             '+' => {
-                self.add_token(Token::Plus(self.line));
+                self.add_token(Token::new(self.line, TokenType::Plus));
             }
             '*' => {
-                self.add_token(Token::Star(self.line));
+                self.add_token(Token::new(self.line, TokenType::Star));
             }
             '!' => {
                 let matches = self.matches_expected('='); // CANNOT put directly in if condition: double &mut borrow :(
                 self.add_token(if matches {
-                    Token::BangEqual(self.line)
+                    Token::new(self.line, TokenType::BangEqual)
                 } else {
-                    Token::Bang(self.line)
+                    Token::new(self.line, TokenType::Bang)
                 });
             }
             '=' => {
                 let matches = self.matches_expected('=');
                 self.add_token(if matches {
-                    Token::EqualEqual(self.line)
+                    Token::new(self.line, TokenType::EqualEqual)
                 } else {
-                    Token::Equal(self.line)
+                    Token::new(self.line, TokenType::Equal)
                 });
             }
             '<' => {
                 let matches = self.matches_expected('=');
                 self.add_token(if matches {
-                    Token::LessEqual(self.line)
+                    Token::new(self.line, TokenType::LessEqual)
                 } else {
-                    Token::Less(self.line)
+                    Token::new(self.line, TokenType::Less)
                 });
             }
             '>' => {
                 let matches = self.matches_expected('=');
                 self.add_token(if matches {
-                    Token::GreaterEqual(self.line)
+                    Token::new(self.line, TokenType::GreaterEqual)
                 } else {
-                    Token::Greater(self.line)
+                    Token::new(self.line, TokenType::Greater)
                 });
             }
             '/' => {
@@ -155,7 +154,7 @@ impl Scanner {
                         self.advance();
                     }
                 } else {
-                    self.add_token(Token::Slash(self.line));
+                    self.add_token(Token::new(self.line, TokenType::Slash));
                 }
             }
             '"' => {
@@ -177,7 +176,7 @@ impl Scanner {
                     .to_string();
                 self.advance();
                 println!("adding string with len {}", s.len());
-                self.add_token(Token::String(self.line, s));
+                self.add_token(Token::new(self.line, TokenType::String(s)));
             }
             '0'..='9' => {
                 let start = self.current;
@@ -190,10 +189,10 @@ impl Scanner {
                         self.advance();
                     }
                 }
-                self.add_token(Token::Number(
+                self.add_token(Token::new(
                     self.line,
-                    self.source[start - 1..self.current].parse::<f64>().unwrap(),
-                ))
+                    TokenType::Number(self.source[start - 1..self.current].parse::<f64>().unwrap()),
+                ));
             }
             'a'..='z' | 'A'..='Z' | '_' => {
                 let start = self.current;
@@ -204,34 +203,30 @@ impl Scanner {
                 let lexeme = self.source[start - 1..self.current].to_string();
                 match self.keyword_map.get(&lexeme) {
                     Some(t) => {
-                        let mut ret = t.clone();
-                        // this is dumb and brittle, but I don't think there's an easier way
-                        // given the way I've set this up :(
-                        match &mut ret {
-                            Token::And(val)
-                            | Token::Class(val)
-                            | Token::Else(val)
-                            | Token::False(val)
-                            | Token::Fun(val)
-                            | Token::For(val)
-                            | Token::If(val)
-                            | Token::Nil(val)
-                            | Token::Or(val)
-                            | Token::Print(val)
-                            | Token::Return(val)
-                            | Token::Super(val)
-                            | Token::This(val)
-                            | Token::True(val)
-                            | Token::Var(val)
-                            | Token::While(val) => {
-                                *val = self.line;
+                        match t {
+                              TokenType::And
+                            | TokenType::Class
+                            | TokenType::Else
+                            | TokenType::False
+                            | TokenType::Fun
+                            | TokenType::For
+                            | TokenType::If
+                            | TokenType::Nil
+                            | TokenType::Or
+                            | TokenType::Print
+                            | TokenType::Return
+                            | TokenType::Super
+                            | TokenType::This
+                            | TokenType::True
+                            | TokenType::Var
+                            | TokenType::While => {
+                                self.add_token(Token::new(self.line, t.clone()));
                             }
                             _ => panic!("GOT IMPOSSIBLE TOKEN TYPE FROM SCANNER KEYWORD MAP?!"),
                         }
-                        self.add_token(ret);
                     }
                     None => {
-                        self.add_token(Token::Identifier(self.line, lexeme));
+                        self.add_token(Token::new(self.line, TokenType::Identifier(lexeme)));
                     }
                 }
             }

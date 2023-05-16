@@ -9,6 +9,7 @@ pub use lerror::LoxError;
 pub use parser::Parser;
 pub use scanner::Scanner;
 pub use token::Token;
+pub use token::TokenType;
 
 fn main() {
     let args = std::env::args();
