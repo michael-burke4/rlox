@@ -41,6 +41,52 @@ pub enum Token {
     True(usize),
     Var(usize),
     While(usize),
+}
 
-    Eof(usize),
+impl Token {
+    pub fn print(&self) {
+        match self {
+            Token::LParen(_) => print!("("),
+            Token::RParen(_) => print!(")"),
+            Token::LBrace(_) => print!("{{"),
+            Token::RBrace(_) => print!("}}"),
+            Token::Comma(_) => print!(","),
+            Token::Dot(_) => print!("."),
+            Token::Minus(_) => print!("-"),
+            Token::Plus(_) => print!("+"),
+            Token::Semicolon(_) => print!(";"),
+            Token::Slash(_) => print!("/"),
+            Token::Star(_) => print!("*"),
+
+            Token::Bang(_) => print!("!"),
+            Token::BangEqual(_) => print!("!="),
+            Token::Equal(_) => print!("="),
+            Token::EqualEqual(_) => print!("=="),
+            Token::Greater(_) => print!(">"),
+            Token::GreaterEqual(_) => print!(">="),
+            Token::Less(_) => print!("<"),
+            Token::LessEqual(_) => print!("<="),
+
+            Token::Identifier(_, s) => print!("{}", s),
+            Token::String(_, s) => print!("\"{}\"", s),
+            Token::Number(_, f) => print!("{}", f),
+
+            Token::And(_) => print!("and"),
+            Token::Class(_) => print!("class"),
+            Token::Else(_) => print!("else"),
+            Token::False(_) => print!("false"),
+            Token::Fun(_) => print!("fun"),
+            Token::For(_) => print!("for"),
+            Token::If(_) => print!("if"),
+            Token::Nil(_) => print!("nil"),
+            Token::Or(_) => print!("or"),
+            Token::Print(_) => print!("print"),
+            Token::Return(_) => print!("return"),
+            Token::Super(_) => print!("super"),
+            Token::This(_) => print!("this"),
+            Token::True(_) => print!("true"),
+            Token::Var(_) => print!("var"),
+            Token::While(_) => print!("while"),
+        }
+    }
 }

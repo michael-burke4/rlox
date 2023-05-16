@@ -1,12 +1,14 @@
-mod token;
-mod scanner;
+mod expr;
 mod lerror;
+mod parser;
+mod scanner;
+mod token;
 
-pub use token::Token;
-pub use scanner::Scanner;
+pub use expr::Expr;
 pub use lerror::LoxError;
-
-use std::io;
+pub use parser::Parser;
+pub use scanner::Scanner;
+pub use token::Token;
 
 fn main() {
     let args = std::env::args();
@@ -22,6 +24,10 @@ fn main() {
             Err(e) => eprintln!("[Line {}] {}", e.line_no, e.msg),
             _ => (),
         }
-        scanner.print_tokens();
+        let mut parser = Parser::new(scanner);
+        //parser.print_tokens();
+        parser.parse().print();
     }
+
+    println!();
 }

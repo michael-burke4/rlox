@@ -1,5 +1,5 @@
-use crate::Token;
 use crate::LoxError;
+use crate::Token;
 use std::collections::HashMap;
 
 #[derive(Debug)]
@@ -68,6 +68,14 @@ impl Scanner {
             }
         }
         Ok(())
+    }
+
+    pub fn len(&self) -> usize {
+        self.tokens.len()
+    }
+
+    pub fn token_at(&self, at: usize) -> &Token {
+        &self.tokens[at]
     }
 
     fn scan_token(&mut self) -> Result<(), LoxError> {
