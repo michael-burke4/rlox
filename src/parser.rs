@@ -4,6 +4,13 @@ pub struct Parser {
     current: usize,
 }
 
+// check if two instances of an enum share a variant.
+// courtesy of
+// https://stackoverflow.com/a/32554326
+fn variant_eq<T>(a: &T, b: &T) -> bool {
+    std::mem::discriminant(a) == std::mem::discriminant(b)
+}
+
 impl Parser {
     pub fn new(scn: Scanner) -> Parser {
         Parser {
@@ -29,6 +36,14 @@ impl Parser {
 
     fn peek(&self) -> &Token {
         self.scanner.token_at(self.current)
+    }
+
+    fn consume(&mut self, tp: TokenType) -> bool {
+        if !self.at_end() && variant_eq(&tp, &self.peek().typ) {
+            self.advance();
+            return true;
+        }
+        false
     }
 
     fn at_end(&self) -> bool {
@@ -141,24 +156,52 @@ impl Parser {
     fn primary(&mut self) -> Expr {
         let ret: Expr;
         match self.peek().typ {
-              TokenType::False
+            TokenType::False
             | TokenType::True
             | TokenType::Nil
             | TokenType::String(_)
             | TokenType::Number(_) => {
                 ret = Expr::Literal(self.peek().clone());
+                self.advance();
             }
             TokenType::LParen => {
                 self.advance();
                 let e = self.expression();
                 ret = Expr::Grouping(Box::new(e));
+                if !self.consume(TokenType::RParen) {
+                    println!("bad token on line {}", self.peek().line_no);
+                }
             }
             _ => {
                 panic!("bad error handling right now, but found bad primary token.");
             }
         }
+        ret
+    }
+
+    fn synchronize(&mut self) {
         self.advance();
-        return ret;
+
+        while !self.at_end() {
+            match self.previous().unwrap().typ {
+                TokenType::Semicolon => return,
+                _ => {}
+            }
+            match self.peek().typ {
+                TokenType::Class
+                | TokenType::Fun
+                | TokenType::Var
+                | TokenType::For
+                | TokenType::If
+                | TokenType::While
+                | TokenType::Print
+                | TokenType::Return => {
+                    return;
+                }
+                _ => {}
+            }
+            self.advance();
+        }
     }
 
     pub fn print_tokens(&self) {

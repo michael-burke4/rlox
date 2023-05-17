@@ -202,29 +202,27 @@ impl Scanner {
 
                 let lexeme = self.source[start - 1..self.current].to_string();
                 match self.keyword_map.get(&lexeme) {
-                    Some(t) => {
-                        match t {
-                              TokenType::And
-                            | TokenType::Class
-                            | TokenType::Else
-                            | TokenType::False
-                            | TokenType::Fun
-                            | TokenType::For
-                            | TokenType::If
-                            | TokenType::Nil
-                            | TokenType::Or
-                            | TokenType::Print
-                            | TokenType::Return
-                            | TokenType::Super
-                            | TokenType::This
-                            | TokenType::True
-                            | TokenType::Var
-                            | TokenType::While => {
-                                self.add_token(Token::new(self.line, t.clone()));
-                            }
-                            _ => panic!("GOT IMPOSSIBLE TOKEN TYPE FROM SCANNER KEYWORD MAP?!"),
+                    Some(t) => match t {
+                        TokenType::And
+                        | TokenType::Class
+                        | TokenType::Else
+                        | TokenType::False
+                        | TokenType::Fun
+                        | TokenType::For
+                        | TokenType::If
+                        | TokenType::Nil
+                        | TokenType::Or
+                        | TokenType::Print
+                        | TokenType::Return
+                        | TokenType::Super
+                        | TokenType::This
+                        | TokenType::True
+                        | TokenType::Var
+                        | TokenType::While => {
+                            self.add_token(Token::new(self.line, t.clone()));
                         }
-                    }
+                        _ => panic!("GOT IMPOSSIBLE TOKEN TYPE FROM SCANNER KEYWORD MAP?!"),
+                    },
                     None => {
                         self.add_token(Token::new(self.line, TokenType::Identifier(lexeme)));
                     }
